@@ -1,6 +1,6 @@
-// This is just a utility that executes a function asynchronously
+// This is just a utility that executes a given function asynchronously
 
-const asyncHalder = (requestHandler) => {
+const asyncHanlder = (requestHandler) => {
     (req, res, next) => {
         Promise
         .resolve(requestHandler(req, res, next))
@@ -8,7 +8,7 @@ const asyncHalder = (requestHandler) => {
     }
 }
 
-export { asyncHalder }
+export { asyncHanlder }
 
 // Try Catch method
 

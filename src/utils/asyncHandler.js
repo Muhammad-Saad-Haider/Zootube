@@ -1,7 +1,7 @@
-// This is just a utility that executes a given function asynchronously
+// This is just a utility that executes a given function asynchronously ensuring possiblility of failure of the execution
 
 const asyncHanlder = (requestHandler) => {
-    (req, res, next) => {
+    return (req, res, next) => {
         Promise
         .resolve(requestHandler(req, res, next))
         .catch((err) => {next(err)});

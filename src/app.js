@@ -1,6 +1,6 @@
 import express from "express"
 import cors from "cors"
-import cookieParser from "coockie-parser"
+import cookieParser from "cookie-parser"
 
 const app = express();
 
@@ -25,5 +25,12 @@ app.use(express.static("public"));  // Here public is just a name
 // To access and set cookies on user's browser
 app.use(cookieParser());
 
+// Importing routes
+
+import userRouter from "./routes/user.routes.js"
+
+// Routes declaration
+
+app.use("/api/v1/users" , userRouter);
 
 export { app }

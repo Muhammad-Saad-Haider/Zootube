@@ -24,12 +24,9 @@ connectDB()
 
 
 
-
-
-
-
-
 /*
+// Another Method
+
 import express from "express";
 
 const app = express();

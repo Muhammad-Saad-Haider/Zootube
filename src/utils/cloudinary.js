@@ -1,4 +1,3 @@
-import { log } from "console";
 import {v2 as cloudinary} from cloudinary  // here we have renamed 'v2' as 'cloudinary' using this -> 'as'
 import fs from "fs"
 

@@ -1,4 +1,4 @@
-import {v2 as cloudinary} from cloudinary  // here we have renamed 'v2' as 'cloudinary' using this -> 'as'
+import {v2 as cloudinary} from "cloudinary"  // here we have renamed 'v2' as 'cloudinary' using this -> 'as'
 import fs from "fs"
 
 cloudinary.config({ 
@@ -12,13 +12,13 @@ const uploadOnCloudinary = async (localFilePath) => {
         if(!localFilePath) return null;
 
         // Upload file on Cloudinary
-        const uploadResult = await cloudinary.uploader.upload(localFilePath, {
-            resource_type: "auto"
+        const uploadResult = await cloudinary.uploader.upload(localFilePath, { // uploads the file whose path is this 'localFilePath' to Cloudinary
+            resource_type: "auto"  // automatically detects the type of the file  => resource type = file type
         });
 
-        console.log("File uploaded on Cloudinary URL =", uploadResult.url)
+        // console.log("File uploaded on Cloudinary URL =", uploadResult.url)
 
-        // file uploaded on Cloudinary now remove it from out local storage
+        // After uploading file on cloudinary remove it from local storage
         fs.unlinkSync(localFilePath);
         
         return uploadResult;

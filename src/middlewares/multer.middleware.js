@@ -1,3 +1,5 @@
+// This middleware uploads files on local storage
+
 import multer from "multer"
 
 const storage = multer.diskStorage({

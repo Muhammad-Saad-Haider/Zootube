@@ -162,7 +162,36 @@ const loginUser = asyncHanlder( async (req, res) => {
     )
 });
 
+const logoutUser = asyncHanlder( async (req, res) => {
+    // This 'findByIdAndUpdate' method takes 3 input filter(parameter that will be used to find the user), update(the changes that are to be made), to return the updated user 'new' is set to true or we can also set returnOriginal to false
+    await User.findByIdAndUpdate(
+        req.user._id,
+        {
+            $set: {
+                refreshToken: undefined  // to set the 'refreshToken' to 'undefined'
+            }
+        },
+        {
+            new: true
+        }
+    )
+
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
+
+    return res
+    .status(201)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(
+        new ApiResponse(201, {}, "User loged out")
+    )
+})
+
 export {
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser
 }

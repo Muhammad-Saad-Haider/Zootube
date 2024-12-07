@@ -4,6 +4,26 @@ import { ApiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
+const generateAccessAndRefreshToken = async (userId) => {
+    try {
+        // Selecting the User
+        const user = User.findById(userId);
+
+        const accessToken = user.generateAccessToken();
+        const refreshToken = user.generateRefreshToken();
+
+        // Adding above generated refresh token to the user (we don't want to add access token to the user so only refresh token will be added)
+        user.refreshToken = refreshToken;
+
+        // Saving the User
+        await user.save({ validateBeforeSave: false });  // this save is a method given by mongoose. and the property 'validateBeforeSave' is set to false because we do not want to check validation here
+
+        return { accessToken, refreshToken };
+    } catch (error) {
+        throw new ApiError(500, "Error occured while generating access and refresh token");
+    }
+}
+
 const registerUser = asyncHanlder( async (req, res) => {  // Here the data will be coming with the request(req) in the body
     // Steps to register a user -
     // get user details from frontend
@@ -34,7 +54,7 @@ const registerUser = asyncHanlder( async (req, res) => {  // Here the data will 
 
     // Check if the user already exists or not
     const exitingUser = await User.findOne({  // findOne returns the user which it will encounter first and having the same username or password
-        $or: [{ username }, { email }]  // by this '$or' we can check for both the fields at same time. This will return true if any one of the fields matches with any existing user
+        $or: [{ username }, { email }]  // by this '$or' (-> this or is a MongoDB operator) we can check for both the fields at same time. This will the first user with the same username OR email obtained from req.body
     });
 
     if(exitingUser) {
@@ -83,6 +103,66 @@ const registerUser = asyncHanlder( async (req, res) => {  // Here the data will 
         new ApiResponse(200, createdUser, "User registered successfully")
     );
     
-} );
+});
 
-export { registerUser }
+const loginUser = asyncHanlder( async (req, res) => {
+    // retrieve data from request (username or email and pass would be enough)
+    // validation of the data e.g. the data is not empty and is of correct format
+    // check if the user already exists
+    // find the user
+    // check if the password is correct
+    // send access and refresh token in cookies
+
+    const {username, email, password} = req.body;
+
+    if(!email && !username) {
+        throw new ApiError(400, "username or email is required");
+    }
+
+    const user = await User.findOne({
+        $or: [{ username }, { email }]
+    });
+
+    if(!user) {
+        throw new ApiError(404, "User does not exists");
+    }
+
+    if(!await user.isPasswordCorrect(password)) {
+        throw new ApiError(401, "Invalid User credentials");
+    }
+
+    // generating access and refresh tokens
+    const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
+
+    // user that we are usign till now is the one that does not have refresh token because it was created before generating the refresh token. ->
+    const loggedInUser = User.findOne(user._id).select("-password -refreshToken");
+
+    // we have to send this data in cookies
+    // before that we have to define some options for cookies
+    const options = {
+        httpOnly: true,
+        secure: true  // these two lines makes the cookies to be modifiable from the server only i.e. No one can modify these.
+    }
+
+    return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)  // cookie("key", value, (above options))
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+        new ApiResponse(
+            200,
+            // This is a object. And the 'data' field
+            {
+                user: loggedInUser,
+                accessToken,
+                refreshToken
+            },
+            "User logged in successfully"
+        )
+    )
+});
+
+export {
+    registerUser,
+    loginUser
+}

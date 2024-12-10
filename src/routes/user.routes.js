@@ -20,7 +20,7 @@ router.route('/register').post(
     registerUser
 );
 
-router.route('/login').post(loginUser);
+router.route('/login').post(upload.none(), loginUser);  // 'upload.none()' => this is used to ignore any files that will be uploaded along with this post request. I added this because for some reasons request in json form is working fine but from the the form-data format the req.body is empty.
 
 // Secured Routes
 

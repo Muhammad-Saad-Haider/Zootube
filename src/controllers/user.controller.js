@@ -7,11 +7,11 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 const generateAccessAndRefreshToken = async (userId) => {
     try {
         // Selecting the User
-        const user = User.findById(userId);
+        const user = await User.findById(userId);
 
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
-
+        
         // Adding above generated refresh token to the user (we don't want to add access token to the user so only refresh token will be added)
         user.refreshToken = refreshToken;
 
@@ -112,9 +112,9 @@ const loginUser = asyncHanlder( async (req, res) => {
     // find the user
     // check if the password is correct
     // send access and refresh token in cookies
-
-    const {username, email, password} = req.body;
-
+    
+    const {email, username, password} = req.body;
+    
     if(!email && !username) {
         throw new ApiError(400, "username or email is required");
     }
@@ -135,7 +135,7 @@ const loginUser = asyncHanlder( async (req, res) => {
     const {accessToken, refreshToken} = await generateAccessAndRefreshToken(user._id);
 
     // user that we are usign till now is the one that does not have refresh token because it was created before generating the refresh token. ->
-    const loggedInUser = User.findOne(user._id).select("-password -refreshToken");
+    const loggedInUser = await User.findOne(user._id).select("-password -refreshToken");
 
     // we have to send this data in cookies
     // before that we have to define some options for cookies
@@ -151,7 +151,7 @@ const loginUser = asyncHanlder( async (req, res) => {
     .json(
         new ApiResponse(
             200,
-            // This is a object. And the 'data' field
+            // This is a object = 'data' field
             {
                 user: loggedInUser,
                 accessToken,

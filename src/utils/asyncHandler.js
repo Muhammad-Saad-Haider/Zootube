@@ -1,6 +1,6 @@
 // This is just a utility that executes a given function asynchronously ensuring possiblility of failure of the execution
 
-const asyncHanlder = (requestHandler) => {
+const asyncHandler = (requestHandler) => {
     return (req, res, next) => {
         Promise
         .resolve(requestHandler(req, res, next))
@@ -8,7 +8,7 @@ const asyncHanlder = (requestHandler) => {
     }
 }
 
-export { asyncHanlder }
+export { asyncHandler }
 
 // Try Catch method
 

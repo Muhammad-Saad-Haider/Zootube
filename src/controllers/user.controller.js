@@ -237,9 +237,30 @@ const refreshAccessToken = asyncHanlder( async(req, res) => {  // renew acces to
     }
 });
 
+const changePassword = asyncHanlder( async (req, res) => {
+    const { oldPassword, confirmOldPassword, newPassword } = req.body;
+
+    if(oldPassword !== confirmOldPassword) {
+        throw new ApiError(401, "Password and confirm password does not match");
+    }
+
+    const user = await User.findById(req.user?._id);
+
+    if(!user.isPasswordCorrect(oldPassword)) {
+        throw new ApiError(401, "Invalid old password");
+    }
+
+    // set new password
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json( new ApiResponse(200, {}, "Password changed successfully"));
+})
+
 export {
     registerUser,
     loginUser,
     logoutUser,
-    refreshAccessToken
+    refreshAccessToken,
+    changePassword
 }

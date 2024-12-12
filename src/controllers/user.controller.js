@@ -189,7 +189,7 @@ const logoutUser = asyncHanlder( async (req, res) => {
     .json(
         new ApiResponse(201, {}, "User loged out")
     )
-})
+});
 
 const refreshAccessToken = asyncHanlder( async(req, res) => {  // renew acces token -> (renew session)
     const userRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
@@ -255,6 +255,14 @@ const changePassword = asyncHanlder( async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     return res.status(200).json( new ApiResponse(200, {}, "Password changed successfully"));
+});
+
+const getCurrentUser = asyncHanlder( async (req, res) => {
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, req.user, "Current user fetched successfully")
+    );
 })
 
 export {
@@ -262,5 +270,6 @@ export {
     loginUser,
     logoutUser,
     refreshAccessToken,
-    changePassword
+    changePassword,
+    getCurrentUser
 }

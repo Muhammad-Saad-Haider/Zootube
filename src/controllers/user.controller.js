@@ -276,8 +276,6 @@ const updateAccountDetails = asyncHanlder( async (req, res) => {
     
     if(fullName) updates.fullName = fullName;
     if(email) updates.email = email;
-
-    console.log(updates);
     
     const user = await User.findByIdAndUpdate(
         req.user._id,
@@ -290,7 +288,7 @@ const updateAccountDetails = asyncHanlder( async (req, res) => {
     return res
     .status(200)
     .json(
-        new ApiResponse(200, { user }, "Account details updated")
+        new ApiResponse(200, user, "Account details updated")
     )
 });
 

@@ -368,6 +368,65 @@ const updateUserCoverImage = asyncHanlder( async (req, res) => {
     )
 });
 
+const getUserChannel = asyncHanlder( async(req, res) => {
+    const { username } = req.params;
+
+    if(!username?.trim()) {
+        throw new ApiError(400, "Username is missing");
+    }
+
+    const channel = User.aggregate([
+        {
+            $match: {  // to get the channel that the user is visiting
+                username: username?.toLowerCase()
+            }
+        },
+        {
+            $lookup: {  // to get all the subscribers of the channel
+                from: "subscriptions",  // 'Subscription' -> 'subscriptions' => in MongoDB
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $addFields: {
+                subscribersCount: {
+                    $size: "$subscribers"
+                },
+                isSubscribed: {
+                    $cond: {
+                        if: {$in: [req.user._id, "$subscribers.subscriber"]},
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                fullName: 1,
+                username: 1,
+                subscribersCount: 1,
+                isSubscribed: 1,
+                avatar: 1,
+                coverImage: 1,
+            }
+        }
+    ]);
+
+    if(!channel?.length) {
+        throw new ApiError(404, "Channel does not exists");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, channel[0], "Channel fetched successfully")
+    )
+});
+
+
 export {
     registerUser,
     loginUser,

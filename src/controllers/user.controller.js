@@ -263,7 +263,36 @@ const getCurrentUser = asyncHanlder( async (req, res) => {
     .json(
         new ApiResponse(200, req.user, "Current user fetched successfully")
     );
-})
+});
+
+const updateAccountDetails = asyncHanlder( async (req, res) => {
+    const {fullName, email} = req.body;
+
+    if(!fullName && !email) {
+        throw new ApiError(400, "Please provide the required details that you want to change");
+    }
+    
+    const updates = {};
+    
+    if(fullName) updates.fullName = fullName;
+    if(email) updates.email = email;
+
+    console.log(updates);
+    
+    const user = await User.findByIdAndUpdate(
+        req.user._id,
+        updates,
+        {
+            new: true
+        }
+    ).select("-password");
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(200, { user }, "Account details updated")
+    )
+});
 
 export {
     registerUser,
@@ -271,5 +300,6 @@ export {
     logoutUser,
     refreshAccessToken,
     changePassword,
-    getCurrentUser
+    getCurrentUser,
+    updateAccountDetails
 }

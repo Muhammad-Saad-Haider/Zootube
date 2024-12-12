@@ -3,6 +3,7 @@ import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async (userId) => {
     try {
@@ -190,8 +191,55 @@ const logoutUser = asyncHanlder( async (req, res) => {
     )
 })
 
+const refreshAccessToken = asyncHanlder( async(req, res) => {  // renew acces token -> (renew session)
+    const userRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
+
+    if(!userRefreshToken) {
+        throw new ApiError(401, "Unauthorized request");
+    }
+    
+    try {  // this try catch block is not neccessary
+        const decodedToken = jwt.verify(userRefreshToken, process.env.REFRESH_TOKEN_SECRET);
+    
+        const user = await User.findById(decodedToken?._id);
+    
+        if(!user) {
+            throw new ApiResponse(401, "Invalid refresh token");
+        }
+    
+        if(user.refreshToken !== userRefreshToken) {
+            throw new ApiError(401, "Refresh Token is expired or used");
+        }
+    
+        const newTokens = await generateAccessAndRefreshToken();
+        
+        const options = {
+            httpOnly: true,
+            secure: true
+        }
+    
+        return res
+        .status(200)
+        .cookie("accessToken", newTokens.accessToken, options)
+        .cookie("refreshToken", newTokens.refreshToken, options)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    accessToken: newTokens.accessToken,
+                    refreshToken: newTokens.refreshToken
+                },
+                "Access token refreshed successfully"
+            )
+        )
+    } catch (error) {
+        throw new ApiError(401, error?.message || "Invalid refresh token");
+    }
+});
+
 export {
     registerUser,
     loginUser,
-    logoutUser
+    logoutUser,
+    refreshAccessToken
 }

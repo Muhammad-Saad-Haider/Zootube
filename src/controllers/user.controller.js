@@ -2,7 +2,7 @@ import { asyncHanlder } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { uploadOnCloudinary, deleteFromCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -302,11 +302,15 @@ const updateUserAvatar = asyncHanlder( async (req, res) => {
     const avatar = await uploadOnCloudinary(avatarLocalPath);
 
     if(!avatar.url) {
-        throw new ApiError(400, "Try reuploading your avatar");
+        throw new ApiError(400, "Try re-uploading your avatar");
     }
 
-    const user = await User.findByIdAndUpdate(
-        req.user?._id,
+    const user = await User.findById(req.user?._id);
+
+    const prevAvatar = user.avatar;
+
+    await User.findByIdAndUpdate(
+        user._id,
         {
             $set: {
                 avatar: avatar.url
@@ -315,7 +319,9 @@ const updateUserAvatar = asyncHanlder( async (req, res) => {
         {
             new: true
         }
-    ).select("-password");
+    );
+
+    deleteFromCloudinary(prevAvatar);
 
     return res
     .status(200)
@@ -337,8 +343,12 @@ const updateUserCoverImage = asyncHanlder( async (req, res) => {
         throw new ApiError(400, "Try reuploading your cover image");
     }
 
-    const user = await User.findByIdAndUpdate(
-        req.user?._id,
+    const user = await User.findById(req.user._id);
+
+    const prevCoverImage = user.coverImage;
+
+    await User.findByIdAndUpdate(
+        user._id,
         {
             $set: {
                 coverImage: coverImage.url
@@ -347,7 +357,9 @@ const updateUserCoverImage = asyncHanlder( async (req, res) => {
         {
             new: true
         }
-    ).select("-password");
+    );
+
+    deleteFromCloudinary(prevCoverImage);
 
     return res
     .status(200)

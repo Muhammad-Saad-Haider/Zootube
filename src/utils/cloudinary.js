@@ -33,7 +33,16 @@ const uploadOnCloudinary = async (localFilePath) => {
 
 const deleteFromCloudinary = async (cloudFilePath) => {
     try {
-        const deleteResult = await cloudinary.uploader.destroy(cloudFilePath);
+        // To extract the public ID from a Cloudinary URL, we need to understand the structure of the URL first.
+        // The Cloudinary URL typically follows this pattern:
+        // https://res.cloudinary.com/<cloud_name>/image/upload/<transformation_params>/<public_id>.<file_extension>
+        // The public ID is the part of the URL that comes after the transformation parameters and before the file extension.
+        // In this code, we'll isolate the public ID by identifying its position within the URL structure.
+
+        const pathParts = cloudFilePath.split('/');  // spilts the path by '/' and returns a array of all the parts
+        const publicId = pathParts[pathParts.length-1].split('.')[0];  // get the last part and split it by '.' This also returns a array and then get the first element of it which will be the public id
+        
+        const deleteResult = await cloudinary.uploader.destroy(publicId);  // this delete function of cloudinary works with only public id of the file that is to be deleted so we have to get it before deleting the file
     
         return deleteResult;
     } catch (error) {

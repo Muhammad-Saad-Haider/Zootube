@@ -67,7 +67,7 @@ const registerUser = asyncHandler( async (req, res) => {  // Here the data will 
 
     // Check if the avatar file is uploaded
     if(!avatarLocalPath) {
-        throw new ApiError(400, "Upload the your avatar");
+        throw new ApiError(400, "Upload your avatar");
     }
     
     // Now upload the cover image on Clodinary
@@ -309,7 +309,7 @@ const updateUserAvatar = asyncHandler( async (req, res) => {
 
     const prevAvatar = user.avatar;
 
-    await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
         user._id,
         {
             $set: {
@@ -321,12 +321,12 @@ const updateUserAvatar = asyncHandler( async (req, res) => {
         }
     );
 
-    deleteFromCloudinary(prevAvatar);
+    await deleteFromCloudinary(prevAvatar);
 
     return res
     .status(200)
     .json(
-        new ApiResponse(200, user, "Avatar changed successfully")
+        new ApiResponse(200, updatedUser, "Avatar changed successfully")
     )
 });
 
@@ -340,14 +340,14 @@ const updateUserCoverImage = asyncHandler( async (req, res) => {
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
     if(!coverImage.url) {
-        throw new ApiError(400, "Try reuploading your cover image");
+        throw new ApiError(400, "Try re-uploading your cover image");
     }
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user?._id);
 
     const prevCoverImage = user.coverImage;
 
-    await User.findByIdAndUpdate(
+    const updatedUser = await User.findByIdAndUpdate(
         user._id,
         {
             $set: {
@@ -359,12 +359,12 @@ const updateUserCoverImage = asyncHandler( async (req, res) => {
         }
     );
 
-    deleteFromCloudinary(prevCoverImage);
+    await deleteFromCloudinary(prevCoverImage);
 
     return res
     .status(200)
     .json(
-        new ApiResponse(200, user, "Cover Image changed successfully")
+        new ApiResponse(200, updatedUser, "Cover Image changed successfully")
     )
 });
 

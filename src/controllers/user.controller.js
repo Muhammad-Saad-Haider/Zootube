@@ -1,4 +1,4 @@
-import { asyncHanlder } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/apiError.js";
 import { ApiResponse } from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
@@ -25,7 +25,7 @@ const generateAccessAndRefreshToken = async (userId) => {
     }
 }
 
-const registerUser = asyncHanlder( async (req, res) => {  // Here the data will be coming with the request(req) in the body
+const registerUser = asyncHandler( async (req, res) => {  // Here the data will be coming with the request(req) in the body
     // Steps to register a user -
     // get user details from frontend
     // validation of the data e.g. the data is not empty and is of correct format
@@ -106,7 +106,7 @@ const registerUser = asyncHanlder( async (req, res) => {  // Here the data will 
     
 });
 
-const loginUser = asyncHanlder( async (req, res) => {
+const loginUser = asyncHandler( async (req, res) => {
     // retrieve data from request (username or email and pass would be enough)
     // validation of the data e.g. the data is not empty and is of correct format
     // check if the user already exists
@@ -163,7 +163,7 @@ const loginUser = asyncHanlder( async (req, res) => {
     )
 });
 
-const logoutUser = asyncHanlder( async (req, res) => {
+const logoutUser = asyncHandler( async (req, res) => {
     // This 'findByIdAndUpdate' method takes 3 input filter(parameter that will be used to find the user), update(the changes that are to be made), to return the updated user 'new' is set to true or we can also set returnOriginal to false
     await User.findByIdAndUpdate(
         req.user._id,
@@ -191,7 +191,7 @@ const logoutUser = asyncHanlder( async (req, res) => {
     )
 });
 
-const refreshAccessToken = asyncHanlder( async(req, res) => {  // renew acces token -> (renew session)
+const refreshAccessToken = asyncHandler( async(req, res) => {  // renew acces token -> (renew session)
     const userRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
     if(!userRefreshToken) {
@@ -237,7 +237,7 @@ const refreshAccessToken = asyncHanlder( async(req, res) => {  // renew acces to
     }
 });
 
-const changePassword = asyncHanlder( async (req, res) => {
+const changePassword = asyncHandler( async (req, res) => {
     const { oldPassword, confirmOldPassword, newPassword } = req.body;
 
     if(oldPassword !== confirmOldPassword) {
@@ -257,7 +257,7 @@ const changePassword = asyncHanlder( async (req, res) => {
     return res.status(200).json( new ApiResponse(200, {}, "Password changed successfully"));
 });
 
-const getCurrentUser = asyncHanlder( async (req, res) => {
+const getCurrentUser = asyncHandler( async (req, res) => {
     return res
     .status(200)
     .json(
@@ -265,7 +265,7 @@ const getCurrentUser = asyncHanlder( async (req, res) => {
     );
 });
 
-const updateAccountDetails = asyncHanlder( async (req, res) => {
+const updateAccountDetails = asyncHandler( async (req, res) => {
     const {fullName, email} = req.body;
 
     if(!fullName && !email) {
@@ -292,7 +292,7 @@ const updateAccountDetails = asyncHanlder( async (req, res) => {
     )
 });
 
-const updateUserAvatar = asyncHanlder( async (req, res) => {
+const updateUserAvatar = asyncHandler( async (req, res) => {
     const avatarLocalPath = req.file?.path;
 
     if(!avatarLocalPath) {
@@ -330,7 +330,7 @@ const updateUserAvatar = asyncHanlder( async (req, res) => {
     )
 });
 
-const updateUserCoverImage = asyncHanlder( async (req, res) => {
+const updateUserCoverImage = asyncHandler( async (req, res) => {
     const coverImageLocalPath = req.file?.path;
 
     if(!coverImageLocalPath) {
@@ -368,7 +368,7 @@ const updateUserCoverImage = asyncHanlder( async (req, res) => {
     )
 });
 
-const getUserChannel = asyncHanlder( async(req, res) => {
+const getUserChannel = asyncHandler( async(req, res) => {
     const { username } = req.params;
 
     if(!username?.trim()) {
